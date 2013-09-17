@@ -41,19 +41,29 @@ _cmake() {
     '(- 1)--help-variable[Print help for a single variable and exit]:variable-name:_cmake_variable_names'
     '(- 1)--help-variable-list[List documented variables and exit]'
     '(- 1)--help-variables[Print help for all variables and exit]'
-    '(- 1)--help[Print usage information and exit]'
+    '(- 1)--copyright[Print the CMake copyright and exit]'
+    '(- 1)'{--help,-help,-usage,-h,-H}'[Print usage information and exit]'
+    '(- 1)--help-full[Print full help and exit]'
+    '(- 1)--help-html[Print full help in HTML format]'
+    '(- 1)--help-man[Print full help as a UNIX man page and exit]'
+    '(- 1)'{--version,-version}'[Print full help as a UNIX man page and exit]'
   )
 
   local cmake_build_options;cmake_build_options=(
-    '(*)-C[Pre-load a script to populate the cache]:script:_files'
+    '-C[Pre-load a script to populate the cache]:script:_files'
     '*-D-[Create a cmake cache entry]:property:_cmake_define_property'
-    '(*)-G[Specify a makefile generator]:generator:_cmake_generators'
-    '(-Wdev)-Wno-dev[Suppress developer warnings]'
-    '(-Wno-dev)-Wdev[Enable developer warnings]'
+    '-U[Remove matching entries from CMake cache]:globbing expression'
+    '-G[Specify a makefile generator]:generator:_cmake_generators'
+    '-T[Specify toolset name if supported by generator]:toolset name'
+    '(-Wno-dev -Wdev)-Wno-dev[Suppress developer warnings]'
+    '(-Wno-dev -Wdev)-Wdev[Enable developer warnings]'
+    '-i[Run in wizard mode]'
+    '-L-[List cache variables]::_values "options" "[non-advanced cache variables]" "A[advanced cache variables]" "H[non-advanced cached variables with help]" "AH[advanced cache variables with help]"'
+    '--trace[Put cmake in trace mode]'
     ':cmake project:_files -/'
   )
 
-  local cmake_command_actions; cmake_command_actions=(
+  local cmake_command_actions;cmake_command_actions=(
     '-E[CMake command mode]:*:command'
   )
 
@@ -62,7 +72,7 @@ _cmake() {
       "$cmake_help_actions[@]" \
     - command \
       "$cmake_command_actions[@]" \
-    - build \
+    - build_opts \
       "$cmake_build_options[@]" && return 0
 }
 
