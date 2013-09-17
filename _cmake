@@ -42,7 +42,7 @@ _cmake() {
     '(- 1)--help-variable[Print help for a single variable and exit]:variable-name:_cmake_variable_names'
     '(- 1)--help-variable-list[List documented variables and exit]'
     '(- 1)--help-variables[Print help for all variables and exit]'
-	)
+  )
 
   local cmake_build_options;cmake_build_options=(
     '(*)-C[Pre-load a script to populate the cache]:script:_files'
