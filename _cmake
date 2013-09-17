@@ -28,7 +28,6 @@ _cmake() {
   local context state line curcontext="$curcontext" cmake_args
 
   local cmake_help_actions;cmake_help_actions=(
-    '(- 1)--help[Print usage information and exit]'
     '(- 1)--help-command[Print help for a single command and exit]:command-name:_cmake_command_names'
     '(- 1)--help-command-list[List available listfile commands and exit]'
     '(- 1)--help-commands[Print help for all commands and exit]'
@@ -42,6 +41,7 @@ _cmake() {
     '(- 1)--help-variable[Print help for a single variable and exit]:variable-name:_cmake_variable_names'
     '(- 1)--help-variable-list[List documented variables and exit]'
     '(- 1)--help-variables[Print help for all variables and exit]'
+    '(- 1)--help[Print usage information and exit]'
   )
 
   local cmake_build_options;cmake_build_options=(
@@ -75,13 +75,24 @@ _cmake_command_names() {
   _values 'command name' ${command_names[@]:1} && return 0
 }
 
+# -----------------
+# _cmake_list_names
+# -----------------
+(( $+functions[_cmake_list_names] )) ||
+_cmake_list_names() {
+  local command; command="$@[1]"
+  local desc; desc="$@[2]"
+  local list_names; list_names=(${(f)"$($service $command 2> /dev/null | sed -e 's/\[/\\\[/' -e 's/\]/\\\]/')"})
+
+  _values ${desc} ${list_names[@]:1} && return 0
+}
+
 # ------------------
 # _cmake_module_names
 # ------------------
 (( $+functions[_cmake_module_names] )) ||
 _cmake_module_names() {
-  local module_names; module_names=(${(f)"$($service --help-module-list 2> /dev/null)"})
-  _values 'module name' ${module_names[@]:1} && return 0
+  _cmake_list_names '--help-module-list' 'module name' && return 0
 }
 
 # --------------------
@@ -89,8 +100,7 @@ _cmake_module_names() {
 # --------------------
 (( $+functions[_cmake_property_names] )) ||
 _cmake_property_names() {
-  local property_names; property_names=(${(f)"$($service --help-property-list 2> /dev/null)"})
-  _values 'property name' ${property_names[@]:1} && return 0
+  _cmake_list_names '--help-property-list' 'property name' && return 0
 }
 
 # ---------------------
@@ -98,11 +108,8 @@ _cmake_property_names() {
 # ---------------------
 (( $+functions[_cmake_variable_names] )) ||
 _cmake_variable_names() {
-  local variable_names; variable_names=(${(f)"$($service --help-variable-list 2> /dev/null | sed -e 's/\[/\\\[/' -e 's/\]/\\\]/')"})
-  
-  _values 'variable name' ${variable_names[@]:1} && return 0
+  _cmake_list_names '--help-variable-list' 'variable name' && return 0
 }
-
 
 # ----------------------
 # _cmake_define_property
