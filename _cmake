@@ -112,9 +112,23 @@ _cmake() {
       "$cmake_build_options[@]" && return 0
 }
 
-# -------------------
+# ------------------------
+# _cmake_generator_options
+# ------------------------
+(( $+functions[_cmake_generator_options] )) ||
+_cmake_generator_options() {
+  if [ -f $words[1]/Makefile ]
+  then
+    $_comps[make]
+  elif [ -f $words[1]/build.ninja ]
+  then
+    $_comps[ninja]
+  fi
+}
+
+# ------------
 # _cmake_build
-# -------------------
+# ------------
 (( $+functions[_cmake_build] )) ||
 _cmake_build() {
   _alternative ':current directory:(.)' 'directory::_directories'
