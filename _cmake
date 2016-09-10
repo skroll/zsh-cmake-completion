@@ -80,11 +80,22 @@ _cmake() {
     '-U[Remove matching entries from CMake cache]:globbing expression'
     '-G[Specify a makefile generator]:generator:_cmake_generators'
     '-T[Specify toolset name if supported by generator]:toolset name'
-    '(-Wno-dev -Wdev)-Wno-dev[Suppress developer warnings]'
-    '(-Wno-dev -Wdev)-Wdev[Enable developer warnings]'
+    '(-Wno-dev -Wdev)-Wno-dev[Suppress/Enable developer warnings]'
+    '(-Wno-dev -Wdev)-Wdev[Suppress/Enable developer warnings]'
+    '(-Wno-deprecated -Wdeprecated)-Wno-deprecated[Suppress/Enable deprecation warnings]'
+    '(-Wno-deprecated -Wdeprecated)-Wdeprecated[Suppress/Enable deprecation warnings]'
+    '(-Wno-error=dev -Werror=dev)-Wno-error=dev[Make developer warnings (not) errors]'
+    '(-Wno-error=dev -Werror=dev)-Werror=dev[Make developer warnings (not) errors]'
+    '(-Wno-error=deprecated -Werror=deprecated)-Werror=deprecated[Make deprecated macro and function warnings (not) errors]'
+    '(-Wno-error=deprecated -Werror=deprecated)-Wno-error=deprecated[Make deprecated macro and function warnings (not) errors]'
+    '--warn-uninitialized[Warn about uninitialized values.]'
+    '--warn-unused-vars[Warn about unused variables.]'
+    '--no-warn-unused-cli[Dont warn about command line options.]'
     '-i[Run in wizard mode]'
     '-L-[List cache variables]::_values "options" "[non-advanced cache variables]" "A[advanced cache variables]" "H[non-advanced cached variables with help]" "AH[advanced cache variables with help]"'
     '--trace[Put cmake in trace mode]'
+    '--find-package[Run in pkg-config like mode.]'
+    '--build[Build a CMake-generated project binary tree]:build directory:_cmake_build'
     ':cmake project:_files -/'
   )
 
@@ -99,6 +110,30 @@ _cmake() {
       "$cmake_command_actions[@]" \
     - build_opts \
       "$cmake_build_options[@]" && return 0
+}
+
+# -------------------
+# _cmake_build
+# -------------------
+(( $+functions[_cmake_build] )) ||
+_cmake_build() {
+  _alternative ':current directory:(.)' 'directory::_directories'
+
+# TODO: options after <dir> missing
+#       --build <dir>
+#              Build a CMake-generated project binary tree.
+#
+#              This abstracts a native build tool's command-line interface with the following options:
+#
+#                 <dir>          = Project binary directory to be built.
+#                 --target <tgt> = Build <tgt> instead of default targets.
+#                 --config <cfg> = For multi-configuration tools, choose <cfg>.
+#                 --clean-first  = Build target 'clean' first, then build.
+#                                  (To clean only, use --target 'clean'.)
+#                 --use-stderr   = Ignored.  Behavior is default in CMake >= 3.0.
+#                 --             = Pass remaining options to the native tool.
+#
+#              Run cmake --build with no options for quick help.
 }
 
 # -------------------
