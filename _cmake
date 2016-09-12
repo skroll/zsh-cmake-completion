@@ -95,8 +95,11 @@ _cmake() {
     '-L-[List cache variables]::_values "options" "[non-advanced cache variables]" "A[advanced cache variables]" "H[non-advanced cached variables with help]" "AH[advanced cache variables with help]"'
     '--trace[Put cmake in trace mode]'
     '--find-package[Run in pkg-config like mode.]'
-    '--build[Build a CMake-generated project binary tree]:build directory:_cmake_build'
     ':cmake project:_files -/'
+  )
+
+  local cmake_build_commands;cmake_build_commands=(
+    '--build[Build a CMake-generated project binary tree]:_cmake_build:_cmake_build:_cmake_build_more:_cmake_build_more:_cmake_build_more'
   )
 
   local cmake_command_actions;cmake_command_actions=(
@@ -109,7 +112,9 @@ _cmake() {
     - command \
       "$cmake_command_actions[@]" \
     - build_opts \
-      "$cmake_build_options[@]" && return 0
+      "$cmake_build_options[@]" \
+    - build_cmds \
+      "$cmake_build_commands[@]" && return 0
 }
 
 # ------------------------
@@ -117,23 +122,67 @@ _cmake() {
 # ------------------------
 (( $+functions[_cmake_generator_options] )) ||
 _cmake_generator_options() {
-  if [ -f $words[1]/Makefile ]
+  if [ -f $words[2]/Makefile ]
   then
     $_comps[make]
-  elif [ -f $words[1]/build.ninja ]
+  elif [ -f $words[2]/build.ninja ]
   then
     $_comps[ninja]
   fi
 }
 
-# ------------
-# _cmake_build
-# ------------
-(( $+functions[_cmake_build] )) ||
-_cmake_build() {
-  _alternative ':current directory:(.)' 'directory::_directories'
+# --------------
+# _cmake_targets
+# --------------
+(( $+functions[_cmake_targets] )) ||
+_cmake_targets() {
+  local -a targets
+  if [ -f $words[2]/Makefile ]
+  then
+    # make help doesn't work for Makefiles in general, but for cmake generated makefiles
+    targets=$(make help | sed "s/\.\.\. //")
+  elif [ -f $words[2]/build.ninja ]
+  then
+    targets=$(ninja -C $words[2] -t targets all 2&>/dev/null | awk -F: '{print $1}')
+  fi
+  _describe -V 'build targets' targets
+}
 
-# TODO: options after <dir> missing
+# -----------------
+# _cmake_build_more
+# -----------------
+(( $+functions[_cmake_build_more] )) ||
+_cmake_build_more() {
+  #local -a furz
+  #furz=('--config' '--target' '--clean-first')
+  #_describe 'foobarbaz' furz
+  echo "foobarbaz"
+  _arguments '--config' '--target' '--clean-first'
+
+##  while [[ $words[1] != "--build" ]];
+##  do
+##    shift words
+##    (( CURRENT-- ))
+##  done
+##
+##    local mybuffer;mybuffer=(
+##    '--config[For multi-configuration tools, choose <cfg>.]:config:_files'
+##    '--target[Build <tgt> instead of default targets.]:target:_cmake_targets'
+##    '--clean-first[Build target clean first, then build.]'
+##    #'--'
+##    )
+##
+##    _arguments -C -s \
+##      - stuff \
+##      "$mybuffer[@]"
+    ###_arguments "--target:target:_cmake_targets" "--config:config" "--clean-first[Build target 'clean' first]" "--:Native tool options:_cmake_generator_options"
+    ###local -a fooooo
+    ###fooooo=('--clean-first:Build target "clean" first' '--target[nondefaulttarget]')
+    ###_describe "somefoo" fooooo
+    ###_arguments '-l[list versions]' '-c[specify platform]:CMTCONFIG:__listcmt' '*: :__check_nightlies'
+    ##_arguments '*:build options:(--clean-first --use-stderr)'
+
+  # TODO: options after <dir> missing
 #       --build <dir>
 #              Build a CMake-generated project binary tree.
 #
@@ -148,6 +197,14 @@ _cmake_build() {
 #                 --             = Pass remaining options to the native tool.
 #
 #              Run cmake --build with no options for quick help.
+}
+
+# ------------
+# _cmake_build
+# ------------
+(( $+functions[_cmake_build] )) ||
+_cmake_build() {
+  _alternative ':current directory:(.)' 'directory::_directories'
 }
 
 # -------------------
